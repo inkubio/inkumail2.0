@@ -30,8 +30,7 @@ class InkuMail(object):
 
     def add_intro(self):
         intro = self._read_intro()
-        self.mail.find(id="intro").append(
-            BS(intro, "html.parser"))
+        self.mail.find(id="intro").contents = BS(intro, "html.parser")
 
     def add_table_of_contents(self):
         for category in self.articles_by_category:
@@ -65,7 +64,7 @@ class InkuMail(object):
         article_html.find(id="link_target").append(BS(f"<a name='{category['title']}_title{num}' target='_blank' rel='noopener noreferrer'></a>", "html.parser"))
         article_html.find(id="title").append(BS(f"<b>{num}. <b>{article['title']}</b></b><br>", "html.parser"))
         article_html.find(id="body").append(BS(article["body"], "html.parser"))
-        article_html.find(href="#x_beginning")["style"] += f" color: category['color']"
+        article_html.find("table")["bgcolor"] = category["color"]
         return article_html
 
     def add_outro(self):
@@ -88,38 +87,6 @@ class InkuMail(object):
         with open(os.path.join("templates", "table_of_contents", "category_title.html")) as file_handle:
             category_title = BS(file_handle.read(), "html.parser")
         category_title.find(id="table_of_contents_category_title").append(title)
-        category_title.table["style"] += f"color: {color}"
+        category_title.table["color"] = f"{color}"
+        category_title.table["bgcolor"] = f"{color}"
         return category_title
-
-
-articles = [
-    {
-        "title": "Inkubio",
-        "color": "#FFFFFF",
-        "articles": [
-            {
-                "title": "Inkubion ja FK:n Tosi kiva",
-                "body": "Inkubio ja fk haaveilee yhdessä lumesta joku päivä ja muuta leipätekstiä"
-            }
-        ]
-    },
-    {
-        "title": "Other",
-        "color": "rgb(50,50,50)",
-        "articles": [
-            {
-                "title": "Muu artsu",
-                "body": "Tää on toinen artsu jossa on hyvää tekstiä"
-            },
-            {
-                "title": "Jälkimmäinen muu artsu",
-                "body": "Tän artikkelin pitäis ilmestyä edellisen jälkeen"
-            }
-        ]
-    }
-]
-
-im = InkuMail()
-im.main()
-with open("test.html", "w+") as f:
-    f.write(im.mail.prettify())
